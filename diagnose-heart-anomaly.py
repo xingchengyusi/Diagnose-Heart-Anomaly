@@ -3,6 +3,7 @@
 # CS441 HW 3
 
 import math
+import sys
 
 def output(res, fname):
   # cor_sum = res[0] + res[1]
@@ -10,18 +11,12 @@ def output(res, fname):
 
 # Naive Bayes classifier
 class naive_bayes:
-  def __init__(self, filename):
-    f = open(filename, 'r')
-    one = f.readline().split(',')
-    self.F = [[0 for x in one[1:]] for x in range(2)]
+  def __init__(self):
+    self.F = [[]]
+    self.fnum = 0
     self.N = [0, 0]
-    # the number of the features
-    self.fnum = len(one[1:])
     # final result: 0:abnormal, 1: normal, 2:test sum, 3:total abnormal, 4:total normal
     self.res = [0, 0, 0, 0, 0]
-    f.close()
-    # current dataset name
-    self.fname = filename
 
   def learner(self, fname) -> None:
     f = open(fname, 'r')
@@ -49,7 +44,7 @@ class naive_bayes:
           if ins[j+1] == 0:
             s = self.N[i] - s
           L[i] = L[i] + math.log(s + 0.5) - math.log(self.N[i] + 0.5)
-      
+
       # print(L)
       self.res[2] += 1
       self.res[ins[0]+3] += 1
@@ -58,12 +53,26 @@ class naive_bayes:
         self.res[cor] += 1
       # print(self.res)
 
-  def run_bayes(self):
-    self.learner(self.fname)
+  def run_bayes(self, filename):
+    self.N = [0, 0]
+    self.res = [0, 0, 0, 0, 0]
+    f = open(filename, 'r')
+    one = f.readline().split(',')
+    self.F = [[0 for x in one[1:]] for x in range(2)]
+    # the number of the features
+    self.fnum = len(one[1:])
+    f.close()
+
+    # begin learner
+    self.learner(filename)
     # test file name
-    self.classifier(self.fname[:-9] + 'test.csv')
-    output(self.res, self.fname[14:-10])
+    self.classifier(filename[:-9] + 'test.csv')
+    output(self.res, filename[14:-10])
 
 if __name__ == "__main__":
-  b = naive_bayes('dataset/spect-resplit-itg.train.csv')
-  b.run_bayes()
+  if len(sys.argv) <= 1:
+    print("Please input the file path.")
+
+  b = naive_bayes()
+  for each in sys.argv[1:]:
+    b.run_bayes(each)
